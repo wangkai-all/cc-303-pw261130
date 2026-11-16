@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RiskLab · 贷款样本与回测（虚构数据）</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="mark">RL</span>
+      <div>
+        <h1>RiskLab</h1>
+        <p>贷款样本时点隔离与回测工作台</p>
+      </div>
+    </div>
+    <div class="fake-badge">全部为虚构客户与合成数据 · 不构成授信建议</div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <section class="panel">
+        <h2>查看口径</h2>
+        <label for="cutoff">数据截止日（入库可见性）</label>
+        <select id="cutoff"></select>
+        <label for="mode">回测方式</label>
+        <select id="mode">
+          <option value="batch_holdout">按申请批次留出</option>
+          <option value="daily_rolling">按日滚动回测</option>
+        </select>
+        <label for="policy">规则版本</label>
+        <select id="policy"></select>
+        <p class="hint" id="modeHint"></p>
+      </section>
+
+      <section class="panel">
+        <h2>流水线</h2>
+        <div class="steps">
+          <button class="btn primary" data-action="sample">1 · 构建样本</button>
+          <button class="btn" data-action="labels">2 · 回补标签</button>
+          <button class="btn" data-action="backtest">3 · 运行回测</button>
+          <button class="btn" data-action="publish">4 · 发布报告</button>
+        </div>
+        <label class="chk"><input type="checkbox" id="simulateFail" /> 在下一步后模拟中断（用于恢复演示）</label>
+        <p class="hint">四步分开执行；中断的任务可点击下方“继续”，不会复用半成品。</p>
+        <div id="jobStatus" class="job-status"></div>
+      </section>
+
+      <section class="panel">
+        <h2>任务记录</h2>
+        <div id="runs" class="runs"></div>
+      </section>
+    </aside>
+
+    <main>
+      <section class="panel hero">
+        <div>
+          <p class="eyebrow">当前截止日 <span id="cutoffLabel"></span></p>
+          <h2 id="heroTitle">样本概览</h2>
+          <p id="heroNote" class="muted"></p>
+        </div>
+        <div class="integrity" id="integrity"></div>
+      </section>
+
+      <section class="kpis" id="kpis"></section>
+
+      <section class="grid two">
+        <div class="panel">
+          <div class="panel-head">
+            <h2>标签成熟度</h2>
+            <span class="tag">观察期未满 = 删失，绝不计好客户</span>
+          </div>
+          <div id="maturityChart" class="chart"></div>
+          <div class="legend-row">
+            <span><i class="swatch good"></i>好</span>
+            <span><i class="swatch bad"></i>坏</span>
+            <span><i class="swatch censored"></i>删失</span>
+            <span class="muted small" id="maturityRange"></span>
+          </div>
+          <div id="maturityNote" class="muted small"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <h2>方法取舍</h2>
+            <span class="tag" id="modeTag"></span>
+          </div>
+          <div id="methodNote"></div>
+          <div id="findings" class="findings"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>分层结果</h2>
+          <div class="tabs" id="segmentTabs"></div>
+        </div>
+        <div id="segmentTable" class="tablewrap"></div>
+      </section>
+
+      <section class="grid two">
+        <div class="panel">
+          <div class="panel-head">
+            <h2>异常与隔离</h2>
+            <span class="tag warn" id="leakTag"></span>
+          </div>
+          <div id="leakage"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <h2>版本对比</h2>
+            <span class="tag">同一截止日 / 同一样本优先</span>
+          </div>
+          <div class="compare-controls">
+            <select id="leftReport"></select>
+            <span>vs</span>
+            <select id="rightReport"></select>
+            <button class="btn small" id="compareBtn">对比</button>
+          </div>
+          <div id="compareOut" class="compare"></div>
+        </div>
+      </section>
+
+      <section class="panel" id="sampleSection">
+        <div class="panel-head">
+          <h2>样本追溯：为什么入选</h2>
+          <span class="tag">选择一笔申请查看逐条证据</span>
+        </div>
+        <div class="trace-controls">
+          <input id="appSearch" list="appList" placeholder="输入申请号或客户号，例如 APP-202606..." />
+          <datalist id="appList"></datalist>
+          <button class="btn small" id="traceBtn">追溯</button>
+          <button class="btn small ghost" id="randomBtn">随机一笔</button>
+        </div>
+        <div id="traceOut" class="trace"></div>
+      </section>
+
+      <section class="grid two">
+        <div class="panel">
+          <h2>数据与存储</h2>
+          <div id="storage" class="kv"></div>
+        </div>
+        <div class="panel">
+          <h2>审计日志</h2>
+          <div id="audits" class="audits"></div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <p>所有客户、申请、还款与逾期均为程序合成；页面中的任何评分与通过率仅用于演示时点口径与回测流程。</p>
+      </footer>
+    </main>
+  </div>
+
+  <div id="toast" class="toast"></div>
+  <script src="/app.js"></script>
+</body>
+</html>
